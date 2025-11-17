@@ -1,8 +1,10 @@
 package org.example.edufy_mediaservice.services;
 import org.example.edufy_mediaservice.dtos.GenreFetchResponse;
+import org.example.edufy_mediaservice.exceptions.UnauthorizedActionException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 @Service
@@ -19,21 +21,24 @@ public class GenreClientService
 
     boolean checkIfGenreExist(Long id, Jwt jwt)
     {
-        boolean exist = false;
 
-        String uri = "/" + id;
-
-        GenreFetchResponse response = restClient.get()
-                .uri(uri)
-                .header("Authorization", "Bearer " + jwt.getTokenValue())
-                .retrieve()
-                .body(GenreFetchResponse.class);
-
-        if(response != null)
+        try
         {
-            exist = true;
-        }
+            GenreFetchResponse response = restClient.get()
+                    .uri("/"+id)
+                    .header("Authorization", "Bearer " + jwt.getTokenValue())
+                    .retrieve()
+                    .body(GenreFetchResponse.class);
 
-        return exist;
+            return response != null;
+        }
+        catch(HttpClientErrorException.NotFound e)
+        {
+            return false;
+        }
+        catch(HttpClientErrorException.Unauthorized e)
+        {
+            throw new RuntimeException("Unauthorized when calling GenreService", e);
+        }
     }
 }
