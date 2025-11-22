@@ -1,6 +1,8 @@
 package org.example.edufy_mediaservice.controllers;
 
 import jakarta.websocket.server.PathParam;
+import org.example.edufy_mediaservice.dtos.MediaArtistDTO;
+import org.example.edufy_mediaservice.dtos.MediaGenreDTO;
 import org.example.edufy_mediaservice.entities.Media;
 import org.example.edufy_mediaservice.services.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("edufy/v1/media")
+@RequestMapping("/edufy/v1/media")
 public class MediaController
 {
     private final MediaService mediaService;
@@ -53,10 +55,28 @@ public class MediaController
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @GetMapping("/by-type")
     public ResponseEntity<List<Media>> getAllMediaByType(@RequestParam("type") Media.MediaType type)
     {
         List<Media> mediaList = mediaService.getAllMediaByType(type);
+        return ResponseEntity.ok(mediaList);
+    }
+
+    @GetMapping("/by-genre")
+    public ResponseEntity<List<MediaGenreDTO>> getAllMediaByGenre(@RequestParam("genre") String name, @AuthenticationPrincipal Jwt jwt)
+    {
+        List<MediaGenreDTO> mediaList = mediaService.getAllMediaByGenre(name, jwt);
+        return ResponseEntity.ok(mediaList);
+    }
+
+    @GetMapping("/by-artist")
+    public ResponseEntity<List<MediaArtistDTO>> getAllMediaByArtist(@RequestParam("artist") String name, @AuthenticationPrincipal Jwt jwt)
+    {
+
+        System.out.println("Getting all media by artist: " + name);
+
+        List<MediaArtistDTO> mediaList = mediaService.getAllMediaByArtist(name, jwt);
+
         return ResponseEntity.ok(mediaList);
     }
 }

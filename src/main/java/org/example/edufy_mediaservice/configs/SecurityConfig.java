@@ -27,6 +27,9 @@ public class SecurityConfig
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/edufy/v1/media/{id}").hasAnyRole("admin", "user")
                         .requestMatchers(HttpMethod.GET, "/edufy/v1/media").hasAnyRole("admin", "user")
+                        .requestMatchers(HttpMethod.GET, "/edufy/v1/media/by-type").hasAnyRole("admin", "user")
+                        .requestMatchers(HttpMethod.GET, "/edufy/v1/media/by-genre").hasAnyRole("admin", "user")
+                        .requestMatchers(HttpMethod.GET, "/edufy/v1/media/by-artist").hasAnyRole("admin", "user")
                         .requestMatchers(HttpMethod.POST, "/edufy/v1/media").hasRole("admin")
                         .requestMatchers(HttpMethod.PUT, "/edufy/v1/media/{id}").hasRole("admin")
                         .requestMatchers(HttpMethod.DELETE, "/edufy/v1/media/{id}").hasRole("admin")

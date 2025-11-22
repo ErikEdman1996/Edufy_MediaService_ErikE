@@ -1,38 +1,37 @@
 package org.example.edufy_mediaservice.services;
+
 import org.example.edufy_mediaservice.dtos.ArtistFetchResponse;
 import org.example.edufy_mediaservice.dtos.GenreFetchResponse;
-import org.example.edufy_mediaservice.exceptions.UnauthorizedActionException;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class GenreClientService
+public class ArtistClientService
 {
     private RestClient restClient;
 
-    public GenreClientService(RestClient.Builder clientBuilder)
+    public ArtistClientService(RestClient.Builder clientBuilder)
     {
         restClient = clientBuilder
-                .baseUrl("http://localhost:8081/edufy/v1/genre")
+                .baseUrl("http://localhost:7777/edufy/v1/artist")
                 .build();
     }
 
-    boolean checkIfGenreExist(Long id, Jwt jwt)
+    boolean checkIfArtistExist(Long id, Jwt jwt)
     {
-
         try
         {
-            GenreFetchResponse response = restClient.get()
-                    .uri("/"+id)
+            ArtistFetchResponse response = restClient.get()
+                    .uri("/by_id/"+id)
                     .header("Authorization", "Bearer " + jwt.getTokenValue())
                     .retrieve()
-                    .body(GenreFetchResponse.class);
+                    .body(ArtistFetchResponse.class);
 
             return response != null;
         }
@@ -46,15 +45,15 @@ public class GenreClientService
         }
     }
 
-    GenreFetchResponse getGenreByName(String name, Jwt jwt)
+    ArtistFetchResponse getArtistByName(String name, Jwt jwt)
     {
         try
         {
-            GenreFetchResponse response = restClient.get()
-                    .uri("/by-name/"+name)
+            ArtistFetchResponse response = restClient.get()
+                    .uri("/by_name/"+name)
                     .header("Authorization", "Bearer " + jwt.getTokenValue())
                     .retrieve()
-                    .body(GenreFetchResponse.class);
+                    .body(ArtistFetchResponse.class);
 
             if(response != null)
             {
@@ -65,7 +64,7 @@ public class GenreClientService
         }
         catch(HttpClientErrorException.NotFound e)
         {
-          return null;
+            return null;
         }
         catch(HttpClientErrorException.Unauthorized e)
         {
@@ -73,15 +72,15 @@ public class GenreClientService
         }
     }
 
-    List<GenreFetchResponse> getAllGenres(Jwt jwt)
+    List<ArtistFetchResponse> getAllArtists(Jwt jwt)
     {
         try
         {
-            List<GenreFetchResponse> response = restClient.get()
+            List<ArtistFetchResponse> response = restClient.get()
                     .uri("/all")
                     .header("Authorization", "Bearer " + jwt.getTokenValue())
                     .retrieve()
-                    .body(new ParameterizedTypeReference<List<GenreFetchResponse>>(){});
+                    .body(new ParameterizedTypeReference<List<ArtistFetchResponse>>(){});
 
             if(response != null)
             {

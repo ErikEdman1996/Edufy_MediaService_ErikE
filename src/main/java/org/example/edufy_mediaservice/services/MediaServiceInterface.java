@@ -1,5 +1,7 @@
 package org.example.edufy_mediaservice.services;
 
+import org.example.edufy_mediaservice.dtos.MediaArtistDTO;
+import org.example.edufy_mediaservice.dtos.MediaGenreDTO;
 import org.example.edufy_mediaservice.entities.Media;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -12,4 +14,6 @@ public interface MediaServiceInterface
     Media updateMedia(Long id, Media media);
     void deleteMedia(Long id);
     List<Media> getAllMediaByType(Media.MediaType mediaType);
+    List<MediaGenreDTO> getAllMediaByGenre(String name, Jwt jwt);
+    List<MediaArtistDTO> getAllMediaByArtist(String name, Jwt jwt);
 }
