@@ -12,89 +12,72 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ArtistClientService
-{
+public class ArtistClientService {
     private RestClient restClient;
 
-    public ArtistClientService(RestClient.Builder clientBuilder)
-    {
+    public ArtistClientService(RestClient.Builder clientBuilder) {
         restClient = clientBuilder
                 .baseUrl("http://localhost:7777/edufy/v1/artist")
                 .build();
     }
 
-    boolean checkIfArtistExist(Long id, Jwt jwt)
-    {
-        try
-        {
+    ArtistFetchResponse getArtistById(Long id, Jwt jwt) {
+        try {
             ArtistFetchResponse response = restClient.get()
-                    .uri("/by_id/"+id)
+                    .uri("/by_id/" + id)
                     .header("Authorization", "Bearer " + jwt.getTokenValue())
                     .retrieve()
                     .body(ArtistFetchResponse.class);
 
-            return response != null;
-        }
-        catch(HttpClientErrorException.NotFound e)
-        {
-            return false;
-        }
-        catch(HttpClientErrorException.Unauthorized e)
-        {
-            throw new RuntimeException("Unauthorized when calling GenreService", e);
+            return response;
+        } catch (HttpClientErrorException.NotFound e) {
+            return null;
+        } catch (HttpClientErrorException.Unauthorized e) {
+            throw new RuntimeException("Unauthorized when calling ArtistService", e);
         }
     }
 
-    ArtistFetchResponse getArtistByName(String name, Jwt jwt)
-    {
-        try
-        {
+    boolean checkIfArtistExist(Long id, Jwt jwt) {
+        return getArtistById(id, jwt) != null;
+    }
+
+    ArtistFetchResponse getArtistByName(String name, Jwt jwt) {
+        try {
             ArtistFetchResponse response = restClient.get()
-                    .uri("/by_name/"+name)
+                    .uri("/by_name/" + name)
                     .header("Authorization", "Bearer " + jwt.getTokenValue())
                     .retrieve()
                     .body(ArtistFetchResponse.class);
 
-            if(response != null)
-            {
+            if (response != null) {
                 return response;
             }
 
             return null;
-        }
-        catch(HttpClientErrorException.NotFound e)
-        {
+        } catch (HttpClientErrorException.NotFound e) {
             return null;
-        }
-        catch(HttpClientErrorException.Unauthorized e)
-        {
+        } catch (HttpClientErrorException.Unauthorized e) {
             throw new RuntimeException("Unauthorized when calling GenreService", e);
         }
     }
 
-    List<ArtistFetchResponse> getAllArtists(Jwt jwt)
-    {
-        try
-        {
+    List<ArtistFetchResponse> getAllArtists(Jwt jwt) {
+        try {
             List<ArtistFetchResponse> response = restClient.get()
                     .uri("/all")
                     .header("Authorization", "Bearer " + jwt.getTokenValue())
                     .retrieve()
-                    .body(new ParameterizedTypeReference<List<ArtistFetchResponse>>(){});
+                    .body(new ParameterizedTypeReference<List<ArtistFetchResponse>>() {
+                    });
 
-            if(response != null)
-            {
+            if (response != null) {
                 return response;
             }
 
             return null;
-        }
-        catch(HttpClientErrorException.NotFound e)
-        {
+        } catch (HttpClientErrorException.NotFound e) {
             return null;
-        }
-        catch(HttpClientErrorException.Unauthorized e)
-        {
+        } catch (HttpClientErrorException.Unauthorized e) {
             throw new RuntimeException("Unauthorized when calling GenreService", e);
         }
     }

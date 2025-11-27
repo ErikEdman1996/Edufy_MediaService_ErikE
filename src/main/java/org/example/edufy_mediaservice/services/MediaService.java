@@ -3,6 +3,7 @@ package org.example.edufy_mediaservice.services;
 import org.example.edufy_mediaservice.dtos.ArtistFetchResponse;
 import org.example.edufy_mediaservice.dtos.GenreFetchResponse;
 import org.example.edufy_mediaservice.dtos.MediaArtistDTO;
+import org.example.edufy_mediaservice.dtos.MediaDetailsDTO;
 import org.example.edufy_mediaservice.dtos.MediaGenreDTO;
 import org.example.edufy_mediaservice.entities.Media;
 import org.example.edufy_mediaservice.entities.MediaArtist;
@@ -21,8 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class MediaService implements MediaServiceInterface
-{
+public class MediaService implements MediaServiceInterface {
     private final MediaRepository mediaRepository;
     private final MediaGenreRepository mediaGenreRepository;
     private final MediaArtistRepository mediaArtistRepository;
@@ -32,9 +32,8 @@ public class MediaService implements MediaServiceInterface
 
     @Autowired
     public MediaService(final MediaRepository mediaRepository, final MediaGenreRepository mediaGenreRepository,
-                        final MediaArtistRepository mediaArtistRepository, final GenreClientService genreClientService,
-                        final ArtistClientService artistClientService)
-    {
+            final MediaArtistRepository mediaArtistRepository, final GenreClientService genreClientService,
+            final ArtistClientService artistClientService) {
         this.mediaRepository = mediaRepository;
         this.mediaGenreRepository = mediaGenreRepository;
         this.mediaArtistRepository = mediaArtistRepository;
@@ -43,12 +42,10 @@ public class MediaService implements MediaServiceInterface
     }
 
     @Override
-    public Media getMedia(Long id)
-    {
+    public Media getMedia(Long id) {
         Optional<Media> media = mediaRepository.findById(id);
 
-        if(!media.isPresent())
-        {
+        if (!media.isPresent()) {
             throw new ResourceNotFoundException("Media", "id", id);
         }
 
@@ -56,38 +53,28 @@ public class MediaService implements MediaServiceInterface
     }
 
     @Override
-    public Media addMedia(Media media, Jwt jwt)
-    {
-        //Check if Media already exist
-        if(mediaRepository.findByUrl(media.getURL()).isPresent())
-        {
+    public Media addMedia(Media media, Jwt jwt) {
+        // Check if Media already exist
+        if (mediaRepository.findByUrl(media.getURL()).isPresent()) {
             throw new RuntimeException("Media already exists");
         }
 
         Media savedMedia = mediaRepository.save(media);
 
-        for(Long genreId : media.getGenreIds())
-        {
-            if(genreClientService.checkIfGenreExist(genreId, jwt))
-            {
+        for (Long genreId : media.getGenreIds()) {
+            if (genreClientService.checkIfGenreExist(genreId, jwt)) {
                 System.out.println("Genre exist!");
                 mediaGenreRepository.save(new MediaGenre(savedMedia.getId(), genreId));
-            }
-            else
-            {
+            } else {
                 throw new ResourceNotFoundException("Genre", "id", genreId);
             }
         }
 
-        for(Long artistId : media.getArtistIds())
-        {
-            if(artistClientService.checkIfArtistExist(artistId, jwt))
-            {
+        for (Long artistId : media.getArtistIds()) {
+            if (artistClientService.checkIfArtistExist(artistId, jwt)) {
                 System.out.println("Artist exist!");
                 mediaArtistRepository.save(new MediaArtist(savedMedia.getId(), artistId));
-            }
-            else
-            {
+            } else {
                 throw new ResourceNotFoundException("Artist", "id", artistId);
             }
         }
@@ -96,17 +83,14 @@ public class MediaService implements MediaServiceInterface
     }
 
     @Override
-    public Media updateMedia(Long id, Media media)
-    {
+    public Media updateMedia(Long id, Media media) {
         Optional<Media> mediaToUpdate = mediaRepository.findById(id);
 
-        if(!mediaToUpdate.isPresent())
-        {
+        if (!mediaToUpdate.isPresent()) {
             throw new ResourceNotFoundException("Media", "id", id);
         }
 
-        if(!mediaToUpdate.get().getId().equals(id))
-        {
+        if (!mediaToUpdate.get().getId().equals(id)) {
             throw new UnauthorizedActionException("Unauthorized");
         }
 
@@ -114,12 +98,10 @@ public class MediaService implements MediaServiceInterface
     }
 
     @Override
-    public void deleteMedia(Long id)
-    {
+    public void deleteMedia(Long id) {
         Optional<Media> mediaToDelete = mediaRepository.findById(id);
 
-        if(!mediaToDelete.isPresent())
-        {
+        if (!mediaToDelete.isPresent()) {
             throw new ResourceNotFoundException("Media", "id", id);
         }
 
@@ -127,84 +109,105 @@ public class MediaService implements MediaServiceInterface
     }
 
     @Override
-    public List<Media> getAllMediaByType(Media.MediaType mediaType)
-    {
+    public List<Media> getAllMediaByType(Media.MediaType mediaType) {
         return mediaRepository.findByType(mediaType);
     }
 
     @Override
-    public List<MediaGenreDTO> getAllMediaByGenre(String name, Jwt jwt)
-    {
-        //1. Få genre från GenreService via namnet
-        GenreFetchResponse dto = genreClientService.getGenreByName(name, jwt);
+    public List<MediaGenreDTO> getAllMediaByGenre(String name, Jwt jwt) {
+        GenreFetchResponse dto;
 
-        //2. Hämta en lista med alla MediaGenre som har samma genreId som genre-objektet
-        List<MediaGenre> mediaGenres = mediaGenreRepository.findAllByGenreId(dto.id);
-
-        //3. Skapa en lista av all Media från alla MediaGenre-objekt
-        List<Media> mediaList = new ArrayList<>();
-
-        for(MediaGenre mediaGenre : mediaGenres)
-        {
-            Media media = mediaRepository.findById(mediaGenre.getMediaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Media", "id", mediaGenre.getMediaId()));
-            mediaList.add(media);
+        try {
+            dto = genreClientService.getGenreByName(name, jwt);
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Genre", "name", name);
         }
 
-        //4. Skapa en lista av DTOs som bara visar media_titel och genre_namn, returnera den listan
+        if (dto == null) {
+            throw new ResourceNotFoundException("Genre", "name", name);
+        }
+
+        List<MediaGenre> mediaGenres = mediaGenreRepository.findAllByGenreId(dto.id);
+
         List<MediaGenreDTO> dtoList = new ArrayList<>();
 
-        for(Media media : mediaList)
-        {
-            MediaGenreDTO newDTO = new MediaGenreDTO(media.getTitle(), dto.name);
-            dtoList.add(newDTO);
+        for (MediaGenre mediaGenre : mediaGenres) {
+            Media media = mediaRepository.findById(mediaGenre.getMediaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Media", "id", mediaGenre.getMediaId()));
+
+            dtoList.add(new MediaGenreDTO(media.getTitle(), dto.name));
         }
 
         return dtoList;
     }
 
     @Override
-    public List<MediaArtistDTO> getAllMediaByArtist(String name, Jwt jwt)
-    {
-        ArtistFetchResponse dto = artistClientService.getArtistByName(name, jwt);
+    public List<MediaArtistDTO> getAllMediaByArtist(String name, Jwt jwt) {
+        ArtistFetchResponse dto;
 
-        System.out.println(name);
-        System.out.println(dto.name);
-        System.out.println(dto.id);
+        try {
+            dto = artistClientService.getArtistByName(name, jwt);
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Artist", "name", name);
+        }
+
+        if (dto == null) {
+            throw new ResourceNotFoundException("Artist", "name", name);
+        }
 
         List<MediaArtist> mediaArtists = mediaArtistRepository.findAllByArtistId(dto.id);
 
-        List<Media> mediaList = new ArrayList<>();
-
-        for(MediaArtist mediaArtist : mediaArtists)
-        {
-            Media media = mediaRepository.findById(mediaArtist.getMediaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Media", "id", mediaArtist.getMediaId()));
-            mediaList.add(media);
-        }
-
         List<MediaArtistDTO> dtoList = new ArrayList<>();
 
-        for(Media media : mediaList)
-        {
-            MediaArtistDTO newDTO = new MediaArtistDTO(name, media.getTitle());
-            dtoList.add(newDTO);
+        for (MediaArtist mediaArtist : mediaArtists) {
+            Media media = mediaRepository.findById(mediaArtist.getMediaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Media", "id", mediaArtist.getMediaId()));
+
+            dtoList.add(new MediaArtistDTO(dto.name, media.getTitle()));
         }
 
         return dtoList;
     }
 
     @Override
-    public List<MediaArtist> getAllMediaArtist()
-    {
+    public List<MediaArtist> getAllMediaArtist() {
         return mediaArtistRepository.findAll();
     }
 
     @Override
-    public List<MediaGenre> getAllMediaGenre()
-    {
+    public List<MediaGenre> getAllMediaGenre() {
         return mediaGenreRepository.findAll();
     }
 
+    @Override
+    public MediaDetailsDTO getMediaDetails(Long id, Jwt jwt) {
+        Media media = getMedia(id);
 
+        List<MediaArtist> mediaArtists = mediaArtistRepository.findAllByMediaId(id);
+        List<ArtistFetchResponse> artists = new ArrayList<>();
+        for (MediaArtist ma : mediaArtists) {
+            ArtistFetchResponse artist = artistClientService.getArtistById(ma.getArtistId(), jwt);
+            if (artist != null) {
+                artists.add(artist);
+            }
+        }
+
+        List<MediaGenre> mediaGenres = mediaGenreRepository.findAllByMediaId(id);
+        List<GenreFetchResponse> genres = new ArrayList<>();
+        for (MediaGenre mg : mediaGenres) {
+            GenreFetchResponse genre = genreClientService.getGenreById(mg.getGenreId(), jwt);
+            if (genre != null) {
+                genres.add(genre);
+            }
+        }
+
+        return new MediaDetailsDTO(
+                media.getId(),
+                media.getTitle(),
+                media.getAlbum_id(),
+                media.getType(),
+                media.getURL(),
+                artists,
+                genres);
+    }
 }

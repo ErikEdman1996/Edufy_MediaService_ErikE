@@ -7,7 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface MediaGenreRepository extends JpaRepository<MediaGenre, Long>
-{
+public interface MediaGenreRepository extends JpaRepository<MediaGenre, Long> {
     List<MediaGenre> findAllByGenreId(Long genreId);
+
+    List<MediaGenre> findAllByMediaId(Long mediaId);
 }
