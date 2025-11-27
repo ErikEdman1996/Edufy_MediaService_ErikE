@@ -146,7 +146,8 @@ public class MediaService implements MediaServiceInterface
 
         for(MediaGenre mediaGenre : mediaGenres)
         {
-            Media media = mediaRepository.findById(mediaGenre.getId()).get();
+            Media media = mediaRepository.findById(mediaGenre.getMediaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Media", "id", mediaGenre.getMediaId()));
             mediaList.add(media);
         }
 
@@ -177,7 +178,8 @@ public class MediaService implements MediaServiceInterface
 
         for(MediaArtist mediaArtist : mediaArtists)
         {
-            Media media = mediaRepository.findById(mediaArtist.getId()).get();
+            Media media = mediaRepository.findById(mediaArtist.getMediaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Media", "id", mediaArtist.getMediaId()));
             mediaList.add(media);
         }
 
@@ -191,4 +193,18 @@ public class MediaService implements MediaServiceInterface
 
         return dtoList;
     }
+
+    @Override
+    public List<MediaArtist> getAllMediaArtist()
+    {
+        return mediaArtistRepository.findAll();
+    }
+
+    @Override
+    public List<MediaGenre> getAllMediaGenre()
+    {
+        return mediaGenreRepository.findAll();
+    }
+
+
 }

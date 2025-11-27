@@ -11,7 +11,7 @@ VALUES
     (5, 'Burn - Remastered 2004', NULL, 'SONG', 'https://open.spotify.com/track/1iW2ktyrQHNKZwFTvgP0Ta?nd=1&dlsi=eab88542b9414849'),
     (6, 'Money for Nothing - Remastered 1996', NULL, 'SONG', 'https://open.spotify.com/track/4nFNJmjfgBF7jwv2oBC45b?nd=1&dlsi=9c8f02861719479f'),
 /* Song 7 skipped: Need Sleep Token ID */
-    (8, 'Deutschland', NULL, 'SONG', 'https://www.youtube.com/watch?v=NeQM1c-XCDc');
+    (8, 'Deutschland', NULL, 'VIDEO', 'https://www.youtube.com/watch?v=NeQM1c-XCDc');
 
 ---------------------------------------
 -- MEDIA_ARTIST

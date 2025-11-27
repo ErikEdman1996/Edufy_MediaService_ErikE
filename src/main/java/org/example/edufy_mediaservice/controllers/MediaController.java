@@ -4,6 +4,8 @@ import jakarta.websocket.server.PathParam;
 import org.example.edufy_mediaservice.dtos.MediaArtistDTO;
 import org.example.edufy_mediaservice.dtos.MediaGenreDTO;
 import org.example.edufy_mediaservice.entities.Media;
+import org.example.edufy_mediaservice.entities.MediaArtist;
+import org.example.edufy_mediaservice.entities.MediaGenre;
 import org.example.edufy_mediaservice.services.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -78,5 +80,21 @@ public class MediaController
         List<MediaArtistDTO> mediaList = mediaService.getAllMediaByArtist(name, jwt);
 
         return ResponseEntity.ok(mediaList);
+    }
+
+    @GetMapping("/allMediaArtist")
+    public ResponseEntity<List<MediaArtist>> getAllMediaArtists()
+    {
+        List<MediaArtist> list = mediaService.getAllMediaArtist();
+
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/allMediaGenre")
+    public ResponseEntity<List<MediaGenre>> getAllMediaGenre()
+    {
+        List<MediaGenre> list = mediaService.getAllMediaGenre();
+
+        return ResponseEntity.ok(list);
     }
 }
